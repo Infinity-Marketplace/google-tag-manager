@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Changed
+
+- vendor to `infinityro`
+- multiple events to accomodate SEO team requests
+
 ## [3.5.4] - 2024-04-16
 
 ## [3.5.3] - 2024-03-26

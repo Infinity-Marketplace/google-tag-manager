@@ -5077,10 +5077,6 @@ verror@1.10.0:
     core-util-is "1.0.2"
     extsprintf "^1.2.0"
 
-"vtex.google-tag-manager@http://vtex.vtexassets.com/_v/public/typings/v1/vtex.google-tag-manager@3.5.4/public/@types/vtex.google-tag-manager":
-  version "3.5.4"
-  resolved "http://vtex.vtexassets.com/_v/public/typings/v1/vtex.google-tag-manager@3.5.4/public/@types/vtex.google-tag-manager#c46a896b9dde36e51f0bc7c5c03ffeeb85499322"
-
 "vtex.pixel-interfaces@http://vtex.vtexassets.com/_v/public/typings/v1/vtex.pixel-interfaces@1.1.1/public/_types/react":
   version "0.0.0"
   resolved "http://vtex.vtexassets.com/_v/public/typings/v1/vtex.pixel-interfaces@1.1.1/public/_types/react#fa7a0347e046eab3dd768998fc9252b2c0dd5aef"
