@@ -218,11 +218,23 @@ export interface AddToWishlistData extends EventData {
   event: 'addToWishlist'
   eventType: 'vtex:addToWishlist'
   eventName: 'vtex:addToWishlist'
-  items: {
-    selectedItem: SelectedItem
-    product: ProductSummary
+  currency: string
+  wishlistEventObject: {
+    $is_session_activity: boolean
+    $use_ip: boolean
+    action: string
+    button_type: string
+    categories_path: string
+    category_level_1: string
+    category_level_2: string
+    category_level_3: string
+    item_price: number
+    item_quantity: number
+    page_type: string
+    product_brand: string
+    product_id: string
+    product_title: string
   }
-  list: string
 }
 
 export interface SelectedItem {
@@ -338,6 +350,8 @@ interface CartItem {
   skuId: string
   referenceId: string // SKU reference id
   variant: string
+  sellerName: string
+  sellerId: string
 }
 
 interface Totalizer {
@@ -516,6 +530,7 @@ export interface ProductSummary {
   brand: string
   brandId: string
   categories: string[]
+  categoryTree?: Array<{ id: string; name: string }>
   items: ItemSummary[]
   linkText: string
   productId: string

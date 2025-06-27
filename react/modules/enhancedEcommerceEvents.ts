@@ -5,7 +5,6 @@ import {
   Impression,
   CartItem,
 } from '../typings/events'
-import { AnalyticsEcommerceProduct } from '../typings/gtm'
 import {
   purchase,
   selectItem,

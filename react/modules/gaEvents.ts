@@ -29,6 +29,10 @@ import {
   getPurchaseObjectData,
   getPurchaseItems,
   formatCartItemsAndValue,
+  slugify,
+  getProductsDataFromDataLayer,
+  isProductPage,
+  updateProductsInLocalStorage,
 } from './utils'
 import { customDimensions, productViewSkuReference } from './customDimensions'
 import shouldSendGA4Events from './utils/shouldSendGA4Events'
@@ -57,13 +61,23 @@ export function viewItem(eventData: ProductViewData) {
   const discount = getDiscount(seller)
   const quantity = getQuantity(seller)
 
+  // The information about necessary to calculate the discount is not available for the add_to_cart event
+  // so we get it from the upper event from the datalayer.
+  const previousDataLayerProduct = getProductsDataFromDataLayer(
+    variant,
+    'select_item'
+  )
+
   const item = {
     item_id: productId,
     item_name: productName,
-    item_list_name: list,
+    item_list_name: list ?? 'N/A',
+    item_list_id: slugify(list ?? 'N/A'),
+    index: previousDataLayerProduct?.index ?? 'N/A',
     item_brand: brand,
     item_variant: variant,
     discount,
+    affiliation: seller.sellerName,
     quantity,
     price: value,
     ...categoriesHierarchy,
@@ -91,7 +105,7 @@ export function viewItemList(eventData: ProductImpressionData) {
 
   const { list, impressions } = eventData
 
-  const items = getImpressions(impressions)
+  const items = getImpressions(impressions, list)
 
   const data = {
     item_list_name: list,
@@ -129,9 +143,11 @@ export function selectItem(eventData: ProductClickData) {
     item_id: productId,
     item_name: productName,
     item_list_name: list,
+    item_list_id: slugify(list ?? 'N/A'),
     item_brand: brand,
     item_variant: variant,
     index: position,
+    affiliation: seller.sellerName,
     price,
     quantity,
     discount,
@@ -213,6 +229,8 @@ export function addToCart(eventData: AddToCartData) {
   }
 
   updateEcommerce(eventName, { ecommerce: data })
+  // For events from checkout and orderPlaced we add the items to LC to track information like item_list_name, index...etc
+  updateProductsInLocalStorage(items)
 }
 
 export function removeFromCart(eventData: RemoveFromCartData) {
@@ -332,50 +350,28 @@ export function viewCart(eventData: ViewCartData) {
 
 export function addToWishlist(eventData: AddToWishlistData) {
   const eventName = 'add_to_wishlist'
+  const productId = eventData?.wishlistEventObject?.product_id
 
-  const { currency, items, list } = eventData
+  if (!productId || !shouldSendGA4Events()) return
 
-  const { product } = items
+  /*
+    Current wishlist application does not provide enough information or the information is not in the expected format.
+    For this event we will entirely rely on previous events from the dataLayer to provide the necessary information.
+  */
 
-  const {
-    sku,
-    productName,
+  const previousDataLayerProduct = getProductsDataFromDataLayer(
     productId,
-    categories,
-    brand,
-    productReference,
-  } = product
+    isProductPage() ? 'view_item' : 'select_item'
+  )
 
-  const variant = sku ? sku.itemId : items.selectedItem.itemId
-
-  const seller = getSeller(sku ? sku.sellers : items.selectedItem.sellers)
-  const value = getPrice(seller)
-  const categoriesHierarchy = getCategoriesWithHierarchy(categories)
-  const discount = getDiscount(seller)
-  const quantity = getQuantity(seller)
-
-  const item = {
-    item_id: productId,
-    item_name: productName,
-    item_list_name: list,
-    item_brand: brand,
-    item_variant: variant,
-    discount,
-    quantity,
-    price: value,
-    ...categoriesHierarchy,
-    ...customDimensions({
-      productReference,
-      skuReference: sku ? sku.referenceId.Value : items.selectedItem.referenceId,
-      skuName: sku ? sku.name : items.selectedItem.name,
-      quantity,
-    }),
+  if (!previousDataLayerProduct) {
+    return
   }
 
   const data = {
-    currency,
-    value,
-    items: [item],
+    currency: eventData.currency,
+    value: previousDataLayerProduct.price,
+    items: [previousDataLayerProduct],
   }
 
   updateEcommerce(eventName, { ecommerce: data })
