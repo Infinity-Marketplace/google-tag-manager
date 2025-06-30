@@ -310,7 +310,7 @@ export function formatCartItemsAndValue(
 
       const formattedPrice = shouldFormatPrice ? item.price / 100 : item.price
 
-      // The information about necessary to calculate the discount is not available for the add_to_cart event
+      // The information necessary to calculate the discount is not available for the add_to_cart event
       // so we get it from the upper event from the datalayer.
       const previousDataLayerProduct = getProductsDataFromDataLayer(
         item.skuId,

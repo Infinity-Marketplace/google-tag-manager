@@ -61,7 +61,7 @@ export function viewItem(eventData: ProductViewData) {
   const discount = getDiscount(seller)
   const quantity = getQuantity(seller)
 
-  // The information about necessary to calculate the discount is not available for the add_to_cart event
+  // The information necessary to calculate the discount is not available for the add_to_cart event
   // so we get it from the upper event from the datalayer.
   const previousDataLayerProduct = getProductsDataFromDataLayer(
     variant,
