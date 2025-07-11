@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Changed
+
+- Payloads as requested by agency (ex: use sku name, add extra fields...etc)
+
 ## [0.0.1] - 2025-06-30
 
 ### Changed

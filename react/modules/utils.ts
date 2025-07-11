@@ -68,6 +68,14 @@ export function getCategoriesWithHierarchy(categoriesArray: string[]) {
     })
   }
 
+  if (!categoriesFormatted.item_category3) {
+    categoriesFormatted.item_category3 = 'N/A'
+  }
+
+  if (!categoriesFormatted.item_category4) {
+    categoriesFormatted.item_category4 = 'N/A'
+  }
+
   return categoriesFormatted
 }
 
@@ -77,7 +85,7 @@ function getCategoriesHierarchyByKey(
 ) {
   if (!keysArray || !keysArray.length || !categories) return []
   const categoriesFormatted: string[] = []
-  const categoriesHierarchyFormatted = {}
+  const categoriesHierarchyFormatted: Record<string, string> = {}
 
   keysArray.forEach(key => {
     if (key) categoriesFormatted.push(categories[key])
@@ -86,6 +94,14 @@ function getCategoriesHierarchyByKey(
   categoriesFormatted.forEach((category, index) => {
     formatCategoriesHierarchy(categoriesHierarchyFormatted, category, index)
   })
+
+  if (!categoriesHierarchyFormatted.item_category3) {
+    categoriesHierarchyFormatted.item_category3 = 'N/A'
+  }
+
+  if (!categoriesHierarchyFormatted.item_category4) {
+    categoriesHierarchyFormatted.item_category4 = 'N/A'
+  }
 
   return categoriesHierarchyFormatted
 }
@@ -102,7 +118,6 @@ export function getImpressions(impressions: Impression[], listName = 'N/A') {
   const formattedImpressions = impressions.map(impression => {
     const { product, position } = impression
     const {
-      productName,
       productId,
       productReference,
       sku,
@@ -111,7 +126,15 @@ export function getImpressions(impressions: Impression[], listName = 'N/A') {
       categoryTree,
     } = product
 
-    const { itemId, seller, referenceId, name } = sku
+    let { itemId, seller, sellers, referenceId, name } = sku
+
+    if (!seller?.sellerDefault && sellers?.length > 1) {
+      const defaultSeller = sellers.find(s => s.sellerDefault)
+
+      if (defaultSeller) {
+        seller = defaultSeller
+      }
+    }
 
     const price = getPrice(seller)
     const discount = getDiscount(seller)
@@ -132,13 +155,14 @@ export function getImpressions(impressions: Impression[], listName = 'N/A') {
 
     return {
       item_id: productId,
-      item_name: productName,
+      item_name: name,
       item_variant: itemId,
       item_brand: brand,
       index: position,
       item_list_name: listName,
       item_list_id: slugify(listName),
-      discount,
+      discount: discount ?? 'N/A',
+      coupon: 'N/A',
       price,
       quantity,
       affiliation: seller.sellerName,
@@ -304,7 +328,7 @@ export function formatCartItemsAndValue(
 
   const items: AnalyticsEcommerceCustomProduct[] = cartItems.map(
     (item: CartItem) => {
-      const productName = getProductNameWithoutVariant(item.name, item.skuName)
+      const productName = item.variant ?? item.name
 
       const shouldFormatPrice = item.priceIsInt ?? options?.dividePrice
 
@@ -355,7 +379,8 @@ export function formatCartItemsAndValue(
         quantity: item.quantity,
         price: formattedPrice,
         affiliation: affiliation ?? 'N/A',
-        discount,
+        coupon: 'N/A',
+        discount: discount || 'N/A',
         item_list_name,
         item_list_id,
         index,
