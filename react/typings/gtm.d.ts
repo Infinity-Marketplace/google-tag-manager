@@ -25,7 +25,7 @@ interface AnalyticsEcommerceCustomProduct {
   item_category3?: string
   item_category4?: string
   price: number
-  discount?: number
+  discount?: number | 'N/A'
   quantity: number
   item_list_name?: string
   item_list_id?: string

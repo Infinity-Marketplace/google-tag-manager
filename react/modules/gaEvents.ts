@@ -46,14 +46,13 @@ export function viewItem(eventData: ProductViewData) {
 
   const {
     selectedSku,
-    productName,
     productId,
     productReference,
     categories,
     brand,
   } = product
 
-  const { itemId: variant } = selectedSku
+  const { itemId: variant, name } = selectedSku
 
   const seller = getSeller(selectedSku.sellers)
   const value = getPrice(seller)
@@ -70,13 +69,14 @@ export function viewItem(eventData: ProductViewData) {
 
   const item = {
     item_id: productId,
-    item_name: productName,
+    item_name: name,
     item_list_name: list ?? 'N/A',
     item_list_id: slugify(list ?? 'N/A'),
     index: previousDataLayerProduct?.index ?? 'N/A',
     item_brand: brand,
     item_variant: variant,
-    discount,
+    coupon: 'N/A',
+    discount: discount ?? 'N/A',
     affiliation: seller.sellerName,
     quantity,
     price: value,
@@ -103,12 +103,18 @@ export function viewItemList(eventData: ProductImpressionData) {
 
   const eventName = 'view_item_list'
 
-  const { list, impressions } = eventData
+  const { list, impressions, currency } = eventData
 
   const items = getImpressions(impressions, list)
+  const value = items.reduce((acc, item) => {
+    return acc + (item.price ?? 0) * item.quantity
+  }, 0)
 
   const data = {
     item_list_name: list,
+    item_list_id: slugify(list ?? 'N/A'),
+    value: Math.round(value * 100) / 100,
+    currency,
     items,
   }
 
@@ -120,16 +126,9 @@ export function selectItem(eventData: ProductClickData) {
 
   const eventName = 'select_item'
 
-  const { product, list, position } = eventData
+  const { product, list, position, currency } = eventData
 
-  const {
-    sku,
-    productName,
-    productId,
-    productReference,
-    categories,
-    brand,
-  } = product
+  const { sku, productId, productReference, categories, brand } = product
 
   const { itemId: variant, referenceId, name } = sku
 
@@ -141,7 +140,7 @@ export function selectItem(eventData: ProductClickData) {
 
   const item = {
     item_id: productId,
-    item_name: productName,
+    item_name: name,
     item_list_name: list,
     item_list_id: slugify(list ?? 'N/A'),
     item_brand: brand,
@@ -150,7 +149,8 @@ export function selectItem(eventData: ProductClickData) {
     affiliation: seller.sellerName,
     price,
     quantity,
-    discount,
+    coupon: 'N/A',
+    discount: discount ?? 'N/A',
     ...categoriesHierarchy,
     ...customDimensions({
       productReference,
@@ -162,6 +162,9 @@ export function selectItem(eventData: ProductClickData) {
 
   const data = {
     item_list_name: list,
+    item_list_id: slugify(list ?? 'N/A'),
+    currency,
+    value: (price ?? 0) * quantity,
     items: [item],
   }
 
