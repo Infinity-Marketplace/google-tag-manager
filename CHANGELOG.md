@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Changed
+
+- Replaced script with custom one for server-side tracking
+
+### Added
+
+- Checkout builder and added the new script in the checkout
+
 ## [0.0.2] - 2025-07-14
 
 ### Changed
