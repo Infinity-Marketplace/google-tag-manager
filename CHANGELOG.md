@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.0.3] - 2025-10-30
+
 ### Changed
 
 - Replaced script with custom one for server-side tracking
