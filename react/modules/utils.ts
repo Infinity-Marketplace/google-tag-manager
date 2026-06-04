@@ -1,3 +1,4 @@
+/* eslint-disable no-await-in-loop */
 /* eslint-disable @typescript-eslint/naming-convention */
 import {
   CartItem,
@@ -472,4 +473,82 @@ export function updateProductsInLocalStorage(
     }
   })
   localStorage.setItem('gtm_products', JSON.stringify(newProducts))
+}
+
+export function getCustomProfileFieldValueAsMs(
+  fields: Array<{ key: string; value: string }>,
+  key: string
+) {
+  const date = fields.find(item => item.key === key)
+
+  if (!date?.value) {
+    return 0
+  }
+
+  return new Date(date.value).getTime()
+}
+
+/*
+  If the current user doesn't have updatedIn on the profile, we check if the account was created in the last 30 minutes.
+  If it has, because it's possible that he has logged out and logged in again, we only check if it happened in the last 5 minute.
+*/
+const THIRTY_MINUTES_IN_MS = 30 * 60 * 1000
+const FIVE_MINUTES_IN_MS = 5 * 60 * 1000
+
+export function getIsRegister(
+  profileCreatedIn: number,
+  profileUpdatedIn: number
+) {
+  const now = new Date().getTime()
+
+  return profileUpdatedIn
+    ? now - profileCreatedIn < FIVE_MINUTES_IN_MS
+    : now - profileCreatedIn < THIRTY_MINUTES_IN_MS
+}
+
+// eslint-disable-next-line max-params
+export async function fetchWithRetry(
+  url: string,
+  options: RequestInit = {},
+  maxRetries = 3,
+  timeout = 30000
+): Promise<any> {
+  let lastError = ''
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), timeout)
+
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal,
+      })
+
+      clearTimeout(timeoutId)
+      const jsonResponse = await response.json()
+
+      if (!response.ok || jsonResponse.errors) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+
+      return jsonResponse
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error)
+
+      lastError = errorMessage
+
+      if (attempt < maxRetries) {
+        // Exponential backoff: 1s, 2s, 4s
+        const delay = 2 ** (attempt - 1) * 1000
+
+        await new Promise(resolve => setTimeout(resolve, delay))
+      }
+    }
+  }
+
+  const finalError = `Fetch failed after ${maxRetries} attempts for ${url}: ${lastError}`
+
+  throw new Error(finalError)
 }
